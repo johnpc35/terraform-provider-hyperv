@@ -24,6 +24,13 @@ func dataSourceHyperVMachineInstance() *schema.Resource {
 				ForceNew:     true,
 			},
 
+			"path": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
+
 			"automatic_critical_error_action": {
 				Type:         schema.TypeString,
 				Optional:     true,

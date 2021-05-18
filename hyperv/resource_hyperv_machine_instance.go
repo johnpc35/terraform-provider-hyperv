@@ -34,6 +34,13 @@ func resourceHyperVMachineInstance() *schema.Resource {
 				ForceNew:     true,
 			},
 
+			"path": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
+
 			"automatic_critical_error_action": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -648,6 +655,7 @@ func resourceHyperVMachineInstanceCreate(data *schema.ResourceData, meta interfa
 	}
 
 	generation := (data.Get("generation")).(int)
+	path := (data.Get("path")).(string)
 	automaticCriticalErrorAction := api.ToCriticalErrorAction((data.Get("automatic_critical_error_action")).(string))
 	automaticCriticalErrorActionTimeout := int32((data.Get("automatic_critical_error_action_timeout")).(int))
 	automaticStartAction := api.ToStartAction((data.Get("automatic_start_action")).(string))
@@ -702,7 +710,7 @@ func resourceHyperVMachineInstanceCreate(data *schema.ResourceData, meta interfa
 		return err
 	}
 
-	err = client.CreateVm(name, generation, automaticCriticalErrorAction, automaticCriticalErrorActionTimeout, automaticStartAction, automaticStartDelay, automaticStopAction, checkpointType, dynamicMemory, guestControlledCacheTypes, highMemoryMappedIoSpace, lockOnDisconnect, lowMemoryMappedIoSpace, memoryMaximumBytes, memoryMinimumBytes, memoryStartupBytes, notes, processorCount, smartPagingFilePath, snapshotFileLocation, staticMemory)
+	err = client.CreateVm(name, generation, path, automaticCriticalErrorAction, automaticCriticalErrorActionTimeout, automaticStartAction, automaticStartDelay, automaticStopAction, checkpointType, dynamicMemory, guestControlledCacheTypes, highMemoryMappedIoSpace, lockOnDisconnect, lowMemoryMappedIoSpace, memoryMaximumBytes, memoryMinimumBytes, memoryStartupBytes, notes, processorCount, smartPagingFilePath, snapshotFileLocation, staticMemory)
 	if err != nil {
 		return err
 	}
@@ -889,6 +897,7 @@ func resourceHyperVMachineInstanceRead(data *schema.ResourceData, meta interface
 	log.Printf("[INFO][hyperv][read] flattenedNetworkAdapters: %v", flattenedNetworkAdapters)
 
 	data.Set("generation", vm.Generation)
+	data.Set("path", vm.Path)
 	data.Set("automatic_critical_error_action", vm.AutomaticCriticalErrorAction.String())
 	data.Set("automatic_critical_error_action_timeout", vm.AutomaticCriticalErrorActionTimeout)
 	data.Set("automatic_start_action", vm.AutomaticStartAction.String())

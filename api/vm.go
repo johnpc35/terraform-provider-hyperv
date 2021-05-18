@@ -285,6 +285,7 @@ func (d *OnOffState) UnmarshalJSON(b []byte) error {
 type vm struct {
 	Name                                string
 	Generation                          int
+	Path                                string
 	AutomaticCriticalErrorAction        CriticalErrorAction
 	AutomaticCriticalErrorActionTimeout int32
 	AutomaticStartAction                StartAction
@@ -333,6 +334,10 @@ $NewVmArgs = @{
 	Generation=$vm.Generation
 	MemoryStartupBytes=$vm.MemoryStartupBytes
 	NoVHD=$true
+}
+
+if ($null -ne $vm.Path -and "" -ne $vm.Path) {
+	$NewVmArgs.Path = $vm.Path
 }
 
 New-Vm @NewVmArgs
@@ -387,6 +392,7 @@ Set-Vm @SetVmArgs
 func (c *HypervClient) CreateVm(
 	name string,
 	generation int,
+	path string,
 	automaticCriticalErrorAction CriticalErrorAction,
 	automaticCriticalErrorActionTimeout int32,
 	automaticStartAction StartAction,
@@ -410,6 +416,7 @@ func (c *HypervClient) CreateVm(
 	vmJson, err := json.Marshal(vm{
 		Name:                                name,
 		Generation:                          generation,
+		Path:                                path,
 		AutomaticCriticalErrorAction:        automaticCriticalErrorAction,
 		AutomaticCriticalErrorActionTimeout: automaticCriticalErrorActionTimeout,
 		AutomaticStartAction:                automaticStartAction,
@@ -451,6 +458,7 @@ $ErrorActionPreference = 'Stop'
 $vmObject = Get-VM -Name '{{.Name}}*' | ?{$_.Name -eq '{{.Name}}' } | %{ @{
 	Name=$_.Name;
 	Generation=$_.Generation;
+	Path=$_.Path;
 	AutomaticCriticalErrorAction=$_.AutomaticCriticalErrorAction;
 	AutomaticCriticalErrorActionTimeout=$_.AutomaticCriticalErrorActionTimeout;
 	AutomaticStartAction=$_.AutomaticStartAction;
