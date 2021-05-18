@@ -3,6 +3,7 @@ package hyperv
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -897,7 +898,7 @@ func resourceHyperVMachineInstanceRead(data *schema.ResourceData, meta interface
 	log.Printf("[INFO][hyperv][read] flattenedNetworkAdapters: %v", flattenedNetworkAdapters)
 
 	data.Set("generation", vm.Generation)
-	data.Set("path", vm.Path)
+	data.Set("path", strings.TrimSuffix(vm.Path, "\\"+vm.Name))
 	data.Set("automatic_critical_error_action", vm.AutomaticCriticalErrorAction.String())
 	data.Set("automatic_critical_error_action_timeout", vm.AutomaticCriticalErrorActionTimeout)
 	data.Set("automatic_start_action", vm.AutomaticStartAction.String())
