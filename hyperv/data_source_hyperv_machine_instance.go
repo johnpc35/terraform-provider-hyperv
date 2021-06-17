@@ -161,6 +161,13 @@ func dataSourceHyperVMachineInstance() *schema.Resource {
 			"state": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
+				ValidateFunc: stringKeyInMap(api.VmState_SettableValue, true),
+			},
+
+			"initial_state": {
+				Type:         schema.TypeString,
+				Optional:     true,
 				Default:      api.VmState_name[api.VmState_Running],
 				ValidateFunc: stringKeyInMap(api.VmState_SettableValue, true),
 			},

@@ -174,6 +174,13 @@ func resourceHyperVMachineInstance() *schema.Resource {
 			"state": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
+				ValidateFunc: stringKeyInMap(api.VmState_SettableValue, true),
+			},
+
+			"initial_state": {
+				Type:         schema.TypeString,
+				Optional:     true,
 				Default:      api.VmState_name[api.VmState_Running],
 				ValidateFunc: stringKeyInMap(api.VmState_SettableValue, true),
 			},
@@ -676,7 +683,10 @@ func resourceHyperVMachineInstanceCreate(data *schema.ResourceData, meta interfa
 	smartPagingFilePath := (data.Get("smart_paging_file_path")).(string)
 	snapshotFileLocation := (data.Get("snapshot_file_location")).(string)
 	staticMemory := (data.Get("static_memory")).(bool)
-	state := api.ToVmState((data.Get("state")).(string))
+	state := api.ToVmState((data.Get("initial_state")).(string))
+	if state == 0 {
+		state = api.ToVmState((data.Get("state")).(string))
+	}
 
 	if dynamicMemory && staticMemory {
 		return fmt.Errorf("[ERROR][hyperv][create] Dynamic and static can't be both selected at the same time")
@@ -758,9 +768,11 @@ func resourceHyperVMachineInstanceCreate(data *schema.ResourceData, meta interfa
 		return err
 	}
 
-	err = client.UpdateVmState(name, waitForStateTimeout, waitForStatePollPeriod, state)
-	if err != nil {
-		return err
+	if state != 0 {
+		err = client.UpdateVmState(name, waitForStateTimeout, waitForStatePollPeriod, state)
+		if err != nil {
+			return err
+		}
 	}
 
 	data.SetId(name)
@@ -1100,7 +1112,7 @@ func resourceHyperVMachineInstanceUpdate(data *schema.ResourceData, meta interfa
 		}
 	}
 
-	if hasChangesThatRequireVmToBeOff || data.HasChange("state") {
+	if hasChangesThatRequireVmToBeOff || (data.HasChange("state") && api.ToVmState((data.Get("state")).(string)) != 0) {
 		waitForStateTimeout, waitForStatePollPeriod, err := api.ExpandVmStateWaitForState(data)
 		if err != nil {
 			return err
