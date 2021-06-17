@@ -775,6 +775,11 @@ func resourceHyperVMachineInstanceCreate(data *schema.ResourceData, meta interfa
 		}
 	}
 
+	err = client.AddFailoverClusterVm(name)
+	if err != nil {
+		return err
+	}
+
 	data.SetId(name)
 	log.Printf("[INFO][hyperv][create] created hyperv machine: %#v", data)
 
@@ -1141,6 +1146,11 @@ func resourceHyperVMachineInstanceDelete(data *schema.ResourceData, meta interfa
 		name = v.(string)
 	} else {
 		return fmt.Errorf("[ERROR][hyperv][delete] name argument is required")
+	}
+
+	err = client.RemoveFailoverClusterVm(name)
+	if err != nil {
+		return err
 	}
 
 	waitForStateTimeout, waitForStatePollPeriod, err := api.ExpandVmStateWaitForState(data)

@@ -630,3 +630,37 @@ func (c *HypervClient) DeleteVm(name string) (err error) {
 
 	return err
 }
+
+type addFailoverClusterVmArgs struct {
+	Name string
+}
+
+var addFailoverClusterVmTemplate = template.Must(template.New("AddFailoverClusterVm").Parse(`
+$ErrorActionPreference = 'Stop'
+Get-VM -Name '{{.Name}}*' | ?{$_.Name -eq '{{.Name}}'} | Add-ClusterVirtualMachineRole
+`))
+
+func (c *HypervClient) AddFailoverClusterVm(name string) (err error) {
+	err = c.runFireAndForgetScript(addFailoverClusterVmTemplate, addFailoverClusterVmArgs{
+		Name: name,
+	})
+
+	return err
+}
+
+type removeFailoverClusterVmArgs struct {
+	Name string
+}
+
+var removeFailoverClusterVmTemplate = template.Must(template.New("RemoveFailoverClusterVm").Parse(`
+$ErrorActionPreference = 'Stop'
+Get-VM -Name '{{.Name}}*' | ?{$_.Name -eq '{{.Name}}'} | Remove-ClusterGroup -RemoveResources -Force
+`))
+
+func (c *HypervClient) RemoveFailoverClusterVm(name string) (err error) {
+	err = c.runFireAndForgetScript(removeFailoverClusterVmTemplate, removeFailoverClusterVmArgs{
+		Name: name,
+	})
+
+	return err
+}
